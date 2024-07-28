@@ -1,6 +1,28 @@
 import random, time, sys
 
+billboards = 0
 money = 500000
+TVends = 0
+socialmediaads = 0
+TVcommercials = 0
+Bends = 0
+seasonal_factors = {
+    "January": 0.8,
+    "February": 0.9,
+    "March": 1.0,
+    "April": 1.1,
+    "May": 1.2,
+    "June": 1.2,
+    "July": 1.1,
+    "August": 1.0,
+    "September": 0.9,
+    "October": 0.8,
+    "November": 0.7,
+    "December": 0.5
+}
+seasons = ['Winter', 'Spring', 'Summer', 'Autumn']
+months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+monthLengths = {'January': 31, 'February': 28, 'March': 31, 'April': 30, 'May': 31, 'June': 30, 'July': 31, 'August': 31, 'September': 30, 'October': 31, 'November': 30, 'December': 31}
 rides = [['roller coaster', 'Screaming Serpent', 1], ['carousel', 'Woodland Animals', 1]]
 unownedUpgrades = [['Parking Lot', 750000], ['Restaurant', 1000000], ['Fast-Food Restaurant', 500000], ['Gift Shop', 350000], ['Bowling Alley', 2000000], ['Arcade', 200000], ['Enhance Security', 100000]]
 unownedSmallUpgrades = [['Ice Cream Kiosk', 100000], ['Park Map', 30000], ['Photo Kiosk', 70000], ['Virtual Reality Experience', 350000]]
@@ -9,9 +31,10 @@ ownedSmallUpgrades = []
 entryPrice = 10
 FastPrice = 15
 
-def simulateGuestsAndIncome():
+def simulateGuestsAndIncome(month):
   if len(rides) > 0:
-    numOfGuests = random.randint(100_000, 500_000)
+    numOfGuests = random.randint(1_000_000, 5_000_000)
+    numOfGuests /= entryPrice
     numOfGuests /= 365
     numOfGuests *= len(rides)
     numOfGuests = int(numOfGuests)
@@ -20,7 +43,6 @@ def simulateGuestsAndIncome():
       hooligans -= random.randint(0, hooligans)
     numOfGuests -= hooligans
     allGuests = numOfGuests + hooligans
-    # 10 - 20% of people get the fastpass
     fastpassChance = random.randint(10, 20)
     num = numOfGuests / 100
     num *= fastpassChance
@@ -53,19 +75,115 @@ def simulateGuestsAndIncome():
     if ['Arcade', 200000] in ownedUpgrades:
       Arcade = allGuests * random.randint(20, 30)
       price += Arcade * random.randint(0.25, 10)
+    numOfGuests *= seasonal_factors[month]
+    for i in range(billboards):
+      numOfGuests *= random.randint(102, 105)/100
+    for i in range(TVcommercials):
+      numOfGuests *= random.randint(110, 300)/100
+    for i in range(socialmediaads):
+      numOfGuests *= random.randint(110, 250)/100
     return price, hooligans, allGuests
   else:
     return -100, 0, 0
+
+def prettyPrintNum(num):
+  num = str(num)
+  if '.' in num:
+      num_split = num.split('.')
+      num = num_split[0]
+  num = num[::-1]
+  result = ''
+  for i in range(len(num)):
+      if i % 3 == 0 and i != 0:
+          result += ','
+      result += num[i]
+  num = result[::-1]
+  if num[0] == ',':
+      num = num[1:]
+  if len(num) >= 2 and num[-2] == '.':
+      num = list(num)
+      num.append('0')
+      num = ''.join(num)
+  elif '.' not in num:
+      num = list(num)
+      num.append('.00')
+      num = ''.join(num)
+  return num
+
+def calculateDay(month, day):
+  if month == 'January':
+    return day
+  elif month == 'February':
+    return day - 31
+  elif month == 'March':
+    return day - 59
+  elif month == 'April':
+    return day - 90
+  elif month == 'May':
+    return day - 120
+  elif month == 'June':
+    return day - 151
+  elif month == 'July':
+    return day - 181
+  elif month == 'August':
+    return day - 212
+  elif month == 'September':
+    return day - 243
+  elif month == 'October':
+    return day - 273
+  elif month == 'November':
+    return day - 304
+  else:
+    return day - 334
 
 print('YOU recently moved into a small town called West Valley, which got its name because it is located in between to mountains. Your uncle, the beloved owner of West Valley Amusement Park, has entrusted you with the keys to this bustling amusement park. Are you ready to embark on a journey to create your own roller coaster rides, ferris wheels, fast-food restaurants and more? The future of West Valley Amusement Park is in your hands. You have 1 year to get the park back into business. Are you ready?')
 input('Press ENTER to begin!')
 
 for i in range(365):
+  if Bends == i+1:
+    print('It has been 4 weeks since you bought those billboards. They have now expired.')
+    billboards = 0
+  if TVends == i+1:
+    print('It has been 4 weeks since you made those TV commercials. They have now expired.')
+    TVcommercials -= 1
+  if i+1 < 32:
+    month = 'January'
+  elif i+1 < 60:
+    month = 'February'
+  elif i+1 < 91:
+    month = 'March'
+  elif i+1 < 121:
+    month = 'April'
+  elif i+1 < 152:
+    month = 'May'
+  elif i+1 < 182:
+    month = 'June'
+  elif i+1 < 213:
+    month = 'July'
+  elif i+1 < 244:
+    month = 'August'
+  elif i+1 < 274:
+    month = 'September'
+  elif i+1 < 305:
+    month = 'October'
+  elif i+1 < 335:
+    month = 'November'
+  elif i+1 < 366:
+    month = 'December'
+  print(f'It is {month} {calculateDay(month, i+1)}.')
+  if month in ['December', 'January', 'February']:
+    print('It is currently Winter.')
+  elif month in ['March', 'April', 'May']:
+    print('It is currently Spring.')
+  elif month in ['June', 'July', 'August']:
+    print('It is currently Summer.')
+  elif month in ['September', 'October', 'November']:
+    print('It is currently Autumn.')
   print('Number of days so far:', i+1)
   money = round(money, 2)
-  print(f'Money: ${money}')
-  print(f'Entry price: ${entryPrice} (per person)')
-  print(f'Fast-pass price: ${FastPrice} (per person)')
+  print(f'Money: ${prettyPrintNum(money)}')
+  print(f'Entry price: ${prettyPrintNum(entryPrice)} (per person)')
+  print(f'Fast-pass price: ${prettyPrintNum(FastPrice)} (per person)')
   print()
   print('Here are your options:')
   print('1. Create a ride.')
@@ -78,6 +196,7 @@ for i in range(365):
   print('8. View small upgrades.')
   print('9. Set entry price.')
   print('10. Set FastPass price.')
+  print('11. Begin an advertising campaign.')
   answer = input('> ')
   if answer == '1':
     print('What type of ride would you like to create?')
@@ -307,8 +426,59 @@ for i in range(365):
     if answer.isdigit():
       answer = int(answer)
       FastPrice = answer
-  earned, hoolies, guests = simulateGuestsAndIncome()
-  print(f'You earned ${earned} today.')
+  elif answer == '11':
+    print('Choose a type of advertisment:')
+    print('1. Billboards')
+    print('2. TV commercials')
+    print('3. Social Media Ads')
+    print('Enter back to go back.')
+    print()
+    answer = input('> ')
+    if answer == '1':
+      print('How many billboards would you like to make? It costs $6,000 per billboard, and each billboard lasts 4 weeks (about 1 month). If you already have billboards, then if you choose to get more, the older ones will disappear. Enter 0 if you have changed your mind about this.')
+      answer = input('> ')
+      if answer.isdigit():
+        answer = int(answer)
+        if answer > 0:
+          if money >= answer*6000:
+            money -= answer*6000
+            print('You have made', answer, 'billboards.')
+            billboards = answer
+            Bends = i+29
+          else:
+            print('You do not have enough money to make this many billboards.')
+        else:
+          print('0 billboards have been made.')
+    elif answer == '2':
+      concept  = input('Enter the basic concept for your commercial here.')
+      scripting_fee = random.randint(500, 3000)
+      casting_fee = random.randint(500, 2000)
+      filming_fee = random.randint(2000, 12000)
+      editing_fee = random.randint(1000, 5000)
+      print('To make your desired commercial, the estimated cost will be $'+str(scripting_fee+casting_fee+filming_fee+editing_fee)+ '. ' +'Enter 1 to confirm, or enter 0 to go back.')
+      answer = input('> ')
+      if answer == '1':
+        if money >= scripting_fee+casting_fee+filming_fee+editing_fee:
+          money -= scripting_fee+casting_fee+filming_fee+editing_fee
+          print('You have made a TV commercial.')
+          TVcommercials += 1
+          TVends = i+29
+        else:
+          print('You do not have enough money to make this TV commercial.')
+    elif answer == '3':
+      input('Enter what you want to include in your ad here: ')
+      cost = random.randint(200, 2000)
+      print('To make your desired ad, the estimated cost will be $'+str(cost)+'. Enter 1 to confirm, or 0 to go back.')
+      answer = input('> ')
+      if answer == '1':
+        if money >= cost:
+          money -= cost
+          print('You have made a social media ad.')
+          socialmediaads += 1
+        else:
+          print('You do not have enough money to make this social media ad.')
+  earned, hoolies, guests = simulateGuestsAndIncome(month)
+  print(f'You earned ${prettyPrintNum(earned)} today.')
   money += earned
   print(f'{hoolies} people got into your park without paying today. (You got {hoolies} hooligans today)')
   print(f'{guests} people bought passes into your park today.')
